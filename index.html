@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta id="meta-theme" name="theme-color" content="#0ea5e9" />
+  <title>Agenda Mobile • Acessível + Tema + PDF</title>
+  <style>
+    /* ======== Tema controlado por [data-theme] ======== */
+    :root{
+      --fs: 16px;
+      --actions-height: 74px; /* Altura da barra de ações inferior para cálculos */
+    }
+    html{
+      font-size: var(--fs);
+      box-sizing: border-box;
+    }
+    *, *::before, *::after {
+      box-sizing: inherit;
+    }
+
+    html[data-theme="light"]{
+      --bg:#ffffff; --bg-soft:#f8fafc; --card:#ffffff; --text:#0b1220; --muted:#64748b;
+      --border:#e2e8f0; --primary:#0ea5e9; --danger:#ef4444; --ok:#10b981; --focus:#0ea5e9;
+      --radius:14px; --shadow: 0 1px 2px rgba(15,23,42,.06);
+      --theme-color:#0ea5e9;
+    }
+    html[data-theme="dark"]{
+      --bg:#0b1220; --bg-soft:#0f172a; --card:#0b1727; --text:#e5f2ff; --muted:#9db6d1;
+      --border:#1e293b; --primary:#38bdf8; --danger:#f87171; --ok:#34d399; --focus:#38bdf8;
+      --radius:14px; --shadow: 0 1px 2px rgba(0,0,0,.35);
+      --theme-color:#0b1220;
+    }
+
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ===== Header com controles responsivos ===== */
+    header{ position:sticky; top:0; z-index:10; backdrop-filter: blur(6px); background: color-mix(in oklab, var(--bg) 92%, transparent); border-bottom: 1px solid var(--border); }
+    .wrap{ max-width:760px; margin:0 auto; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .brand{ display:flex; align-items:center; gap:8px; min-width:0; }
+    .logo{ width:24px; height:24px; border-radius:8px; background: var(--primary); opacity:.9; flex:0 0 auto; color: #fff; display: flex; align-items: center; justify-content: center; }
+    .titwrap{ min-width:0; }
+    .title{ font-weight:700; letter-spacing:.2px; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .subtitle{ font-size:.72rem; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .controls{ display:flex; gap:6px; align-items:center; flex:0 0 auto; }
+    .ctrl{ border:1px solid var(--border); background:transparent; color:var(--text); border-radius:10px; padding:8px 10px; font-weight:600; font-size:.9rem; cursor: pointer; }
+    @media (max-width:400px){ .subtitle{ display:none; } .controls .ctrl{ padding:6px 8px; font-size:.85rem; } }
+
+    main{ padding:12px 12px 110px; }
+    .section{ margin:14px 0; }
+    .section h2{ margin:0 0 10px; font-size:.9rem; color:var(--muted); font-weight:600; letter-spacing:.2px; }
+
+    /* ===== Card compacto ===== */
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:12px; display:grid; gap:8px; }
+    .card .top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .card .title{ font-size:1rem; font-weight:700; margin:0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chips{ display:flex; flex-wrap:wrap; gap:6px; }
+    .chip{ font-size:.8rem; color:var(--muted); border:1px solid var(--border); border-radius:999px; padding:6px 10px; background:var(--bg-soft); }
+    .desc{ font-size:.9rem; color:var(--muted); overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }
+    .btnrow{ display:flex; gap:8px; }
+    .mini{ flex:1 1 0; border:1px solid var(--border); background:transparent; color:var(--text); border-radius:10px; padding:10px; font-size:.9rem; cursor: pointer; }
+    .mini.danger{ color: var(--danger); border-color: color-mix(in oklab, var(--danger) 30%, var(--border)); }
+    @media (max-width:360px){ .btnrow{ flex-direction:column; } }
+
+    .empty{ text-align:center; color:var(--muted); padding:18px; font-size:.9rem; border:1px dashed var(--border); border-radius:12px; background:var(--bg-soft); }
+
+    /* ===== Barra de ações: exportar + FAB ===== */
+    .actions{ position:fixed; bottom:0; left:0; right:0; z-index:20; background: color-mix(in oklab, var(--bg) 96%, transparent); border-top:1px solid var(--border); padding:10px 12px calc(12px + env(safe-area-inset-bottom)); height: var(--actions-height); }
+    .bar{ max-width:760px; margin:0 auto; display:flex; gap:10px; align-items:center; }
+    .fab{ flex:0 0 auto; width:52px; height:52px; border-radius:999px; border:none; background:var(--primary); color:#001018; font-size:28px; line-height:0; display:flex; align-items:center; justify-content:center; cursor: pointer; }
+    .ghost{ flex:1 1 0; border:1px solid var(--border); border-radius:12px; padding:12px; background:transparent; color:var(--text); font-weight:600; cursor: pointer; }
+    @media (max-width:380px){ .ghost{ padding:10px; font-size:.9rem; } .fab{ width:48px; height:48px; font-size:24px; } }
+
+    .toast{ position:fixed; left:50%; transform:translateX(-50%); bottom: calc(var(--actions-height) + 12px + env(safe-area-inset-bottom)); background:var(--text); color:var(--bg); padding:8px 12px; border-radius:8px; box-shadow:var(--shadow); font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .2s ease; z-index: 100; }
+    .toast.show{ opacity:1; }
+
+    /* ===== Sheet (modal) para criar/editar ===== */
+    .sheet{ position:fixed; left:0; right:0; bottom:-100%; z-index:30; background:var(--card); border-top-left-radius:18px; border-top-right-radius:18px; border:1px solid var(--border); box-shadow: 0 -8px 20px rgba(0,0,0,.12); transition: bottom .25s ease-out; }
+    .sheet.show{ bottom:0; }
+    .sheet .handle{ width:40px; height:4px; border-radius:999px; background:var(--border); margin:8px auto; }
+    .sheet .wrap{ max-width:760px; margin:0 auto; padding:8px 16px 18px; }
+    .grid{ display:grid; gap:12px; }
+    .two{ grid-template-columns:1fr 1fr; }
+    @media (max-width:520px){ .two{ grid-template-columns:1fr; } }
+    label{ font-size:.84rem; color:var(--muted); display:block; margin:6px 2px 6px; }
+    input, textarea{ width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:11px 12px; font-size:1rem; outline:none; transition:border .15s ease, box-shadow .15s ease; }
+    input:focus, textarea:focus{ border-color:var(--focus); box-shadow:0 0 0 2px color-mix(in oklab, var(--focus) 35%, transparent); }
+    textarea{ min-height:80px; resize:vertical; }
+
+    .quick{ display:flex; gap:6px; flex-wrap:wrap; margin-top: 6px; }
+    .q{ border:1px solid var(--border); border-radius:999px; padding:6px 10px; background:var(--bg-soft); font-size:.8rem; color:var(--muted); cursor: pointer; }
+
+    .sheet .form-actions{ display:flex; gap:8px; margin-top:16px; }
+    .sheet .form-actions button{ flex:1 1 0; border:1px solid var(--border); border-radius:10px; padding:12px; font-weight:600; font-size:1rem; background:transparent; color:var(--text); cursor: pointer; }
+    .sheet .form-actions .ok{ color:var(--ok); border-color: color-mix(in oklab, var(--ok) 35%, var(--border)); }
+    .sheet .form-actions .primary{ background:var(--primary); color:#001018; border-color:transparent; }
+
+    /* ===== Impressão (relatório A4) ===== */
+    @media print {
+      body{ background:white; color:black; font-size: 10pt; }
+      header, .actions, .sheet{ display:none !important; }
+      .printable{ display:block !important; }
+      @page{ size:A4; margin:12mm; }
+      main { padding: 0; }
+      .print-header{ font-weight:700; font-size:18px; margin-bottom:6px; }
+      .print-meta{ font-size:12px; color:#555; margin-bottom:10px; }
+      table{ width:100%; border-collapse:collapse; }
+      th, td{ border:1px solid #e5e7eb; padding:6px 8px; font-size:12px; text-align:left; vertical-align:top; }
+      th{ background:#f8fafc; }
+    }
+    .printable{ display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <div class="titwrap">
+          <div class="title">Agenda • Acessível</div>
+          <div class="subtitle">Fonte ajustável • Tema claro/escuro • PDF</div>
+        </div>
+      </div>
+      <div class="controls" role="group" aria-label="Controles de acessibilidade e tema">
+        <button id="btn-font--" class="ctrl" title="Diminuir fonte" aria-label="Diminuir fonte">A−</button>
+        <button id="btn-font++" class="ctrl" title="Aumentar fonte" aria-label="Aumentar fonte">A＋</button>
+        <button id="btn-theme" class="ctrl" title="Alternar tema" aria-label="Alternar tema">🌙/☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="container">
+      <div id="sec-hoje" class="section" hidden>
+        <h2>Hoje</h2>
+        <div class="list"></div>
+      </div>
+      <div id="sec-amanha" class="section" hidden>
+        <h2>Amanhã</h2>
+        <div class="list"></div>
+      </div>
+      <div id="sec-proximos" class="section" hidden>
+        <h2>Próximos dias</h2>
+        <div class="list"></div>
+      </div>
+      <div id="vazio" class="empty" hidden>Nenhum compromisso. Toque em “+” para adicionar.</div>
+    </div>
+
+    <section class="printable" id="printable">
+      <div class="print-header" id="print-title">Agenda de Compromissos</div>
+      <div class="print-meta" id="print-meta"></div>
+      <table id="print-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Título</th><th>Data</th><th>Início</th><th>Término</th><th>Local</th><th>Notas</th><th>Criado em</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div class="actions" role="toolbar" aria-label="Ações">
+    <div class="bar">
+      <button id="btn-exportar" class="ghost" type="button">Exportar agenda (PDF)</button>
+      <button id="btn-add" class="fab" type="button" aria-label="Adicionar">＋</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <section id="sheet" class="sheet" aria-hidden="true" aria-label="Adicionar/Editar compromisso" role="dialog">
+    <div class="handle" aria-hidden="true"></div>
+    <div class="wrap">
+      <form id="form" novalidate>
+        <div class="grid">
+          <div>
+            <label for="titulo">Título *</label>
+            <input id="titulo" name="titulo" type="text" placeholder="Ex: Reunião" required />
+          </div>
+          <div class="two grid">
+            <div>
+              <label for="data">Data *</label>
+              <input id="data" name="data" type="date" required />
+            </div>
+            <div>
+              <label for="horaInicio">Início *</label>
+              <input id="horaInicio" name="horaInicio" type="time" required />
+            </div>
+          </div>
+          <div class="two grid">
+            <div>
+              <label for="horaFim">Término</label>
+              <input id="horaFim" name="horaFim" type="time" />
+            </div>
+            <div>
+              <label for="local">Local (opcional)</label>
+              <input id="local" name="local" type="text" placeholder="Sala 204 / Link" />
+            </div>
+          </div>
+          <div>
+            <label for="obs">Notas (opcional)</label>
+            <textarea id="obs" name="obs" placeholder="Pontos principais..."></textarea>
+          </div>
+          <input type="hidden" id="editingId" name="editingId" />
+        </div>
+
+        <div class="quick" aria-label="Ações rápidas">
+          <button type="button" class="q" data-q="hoje">Hoje</button>
+          <button type="button" class="q" data-q="amanha">Amanhã</button>
+          <button type="button" class="q" data-q="08:00">08:00</button>
+          <button type="button" class="q" data-q="14:00">14:00</button>
+          <button type="button" class="q" data-q="19:00">19:00</button>
+          <button type="button" class="q" data-q="+1h">+1h (término)</button>
+        </div>
+
+        <div class="form-actions">
+          <button id="btn-cancelar" type="button">Fechar</button>
+          <button id="btn-limpar" class="ok" type="button">Limpar</button>
+          <button id="btn-salvar" class="primary" type="button">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    const $ = (sel, ctx=document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel));
+
+    const STORAGE_KEY = 'agenda-cards-simples-v3';
+    const THEME_KEY = 'agenda-theme';
+    const FS_KEY = 'agenda-fontsize';
+    let itens = [];
+    let focusedElementBeforeSheet = null;
+
+    // ======== Utilidades de data (fuso horário local) ========
+    /** Retorna 'YYYY-MM-DD' de um objeto Date local */
+    function ymdLocal(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+    /** Cria um objeto Date local a partir de 'YYYY-MM-DD' */
+    function parseYMD(ymd){
+      const [y,m,d] = (ymd||'').split('-').map(Number);
+      return new Date(y || 1970, (m || 1) - 1, d || 1, 0, 0, 0, 0);
+    }
+    /** Retorna o início do dia (00:00:00) para uma data */
+    function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+    /** Adiciona N dias a uma data */
+    function addDays(d, n){ const date = new Date(d); date.setDate(date.getDate() + n); return date; }
+
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const fmtDataFull = (ymd) => { try{ return new Intl.DateTimeFormat('pt-BR',{ timeZone: tz, dateStyle:'medium' }).format(parseYMD(ymd)); }catch{ return ymd || ''; } };
+    const fmtDataHora = (d=new Date()) => new Intl.DateTimeFormat('pt-BR',{ dateStyle:'medium', timeStyle:'short' }).format(d);
+
+    // ======== Persistência e UI (Tema/Fonte) ========
+    function updateMetaTheme() {
+      const meta = $('#meta-theme');
+      const cs = getComputedStyle(document.documentElement);
+      meta.setAttribute('content', cs.getPropertyValue('--theme-color').trim());
+    }
+
+    function aplicarTemaFontePersistidos(){
+      const root = document.documentElement;
+      const savedTheme = localStorage.getItem(THEME_KEY);
+      if(savedTheme === 'dark' || savedTheme === 'light'){
+        root.setAttribute('data-theme', savedTheme);
+      }
+      const savedFS = Number(localStorage.getItem(FS_KEY));
+      if(savedFS && savedFS >= 14 && savedFS <= 24){
+        root.style.setProperty('--fs', savedFS + 'px');
+      }
+      updateMetaTheme();
+    }
+
+    function carregar(){
+      try{ itens = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }catch{ itens = []; }
+      aplicarTemaFontePersistidos();
+      render();
+    }
+    function salvarLocal(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(itens)); }
+    function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); setTimeout(()=> t.classList.remove('show'), 2000); }
+
+    function toggleTheme(){
+      const root = document.documentElement;
+      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem(THEME_KEY, next);
+      updateMetaTheme();
+      toast(next === 'dark' ? 'Tema escuro ativado' : 'Tema claro ativado');
+    }
+
+    function adjustFont(delta){
+      const root = document.documentElement;
+      const cur = parseFloat(getComputedStyle(root).getPropertyValue('--fs'));
+      let next = Math.max(14, Math.min(24, Math.round(cur + delta)));
+      root.style.setProperty('--fs', next + 'px');
+      localStorage.setItem(FS_KEY, String(next));
+      toast(`Tamanho da fonte: ${next}px`);
+    }
+
+    // ======== Sheet (Modal) Helpers ========
+    const sheet = $('#sheet');
+    function openSheet(){
+      focusedElementBeforeSheet = document.activeElement;
+      sheet.classList.add('show');
+      sheet.setAttribute('aria-hidden','false');
+      $('#titulo').focus({ preventScroll:true });
+    }
+    function closeSheet(){
+      sheet.classList.remove('show');
+      sheet.setAttribute('aria-hidden','true');
+      focusedElementBeforeSheet?.focus();
+    }
+
+    // ======== Lógica do Formulário ========
+    function getFormData(){
+      const form = $('#form');
+      const data = Object.fromEntries(new FormData(form).entries());
+      // Garante que os campos sejam strings e sem espaços em branco desnecessários
+      for (const key in data) {
+        if (typeof data[key] === 'string') data[key] = data[key].trim();
+      }
+      // Adiciona 1h ao término se o início for preenchido mas o término não
+      if(data.horaInicio && !data.horaFim){
+        const [h,m] = data.horaInicio.split(':').map(Number);
+        const endDate = new Date(); endDate.setHours(h, (m||0) + 60, 0, 0);
+        const hh = String(endDate.getHours()).padStart(2,'0');
+        const mm = String(endDate.getMinutes()).padStart(2,'0');
+        data.horaFim = `${hh}:${mm}`;
+      }
+      return data;
+    }
+
+    function validar(data){
+      const faltas = [];
+      if(!data.titulo) faltas.push('Título');
+      if(!data.data) faltas.push('Data');
+      if(!data.horaInicio) faltas.push('Início');
+      if(faltas.length){ toast('Preencha: ' + faltas.join(', ')); return false; }
+      return true;
+    }
+    function limparForm(){ $('#form').reset(); $('#editingId').value=''; $('#titulo').focus(); }
+
+    function salvar(){
+      const data = getFormData();
+      if(!validar(data)) return;
+      
+      const editingId = data.editingId;
+      if(editingId){
+        const idx = itens.findIndex(r => r.id === editingId);
+        if(idx > -1){ itens[idx] = { ...itens[idx], ...data }; }
+        toast('Compromisso atualizado');
+      } else {
+        const now = new Date();
+        itens.unshift({ id: String(now.getTime()), criadoEm: now.toISOString(), ...data });
+        toast('Compromisso salvo');
+      }
+      salvarLocal();
+      render();
+      closeSheet();
+    }
+
+    function editar(id){
+      const item = itens.find(x => x.id === id); if(!item) return;
+      for (const key in item) {
+        const field = $(`#form [name="${key}"]`);
+        if (field) field.value = item[key];
+      }
+      $('#editingId').value = item.id;
+      openSheet();
+    }
+
+    function excluir(id){
+      if(!confirm('Excluir este compromisso?')) return;
+      itens = itens.filter(r => r.id !== id);
+      salvarLocal();
+      render();
+      toast('Compromisso excluído');
+    }
+
+    // ======== Renderização Dinâmica ========
+    function ordenar(a,b){
+      const ka = `${a.data || ''}T${a.horaInicio || '00:00'}`;
+      const kb = `${b.data || ''}T${b.horaInicio || '00:00'}`;
+      return ka.localeCompare(kb);
+    }
+
+    function categ(ymd){
+      if(!ymd) return 'proximos';
+      const today = startOfDay(new Date());
+      const tomorrow = addDays(today, 1);
+      const itemDate = startOfDay(parseYMD(ymd));
+
+      if(itemDate.getTime() === today.getTime()) return 'hoje';
+      if(itemDate.getTime() === tomorrow.getTime()) return 'amanha';
+      return 'proximos'; // Agrupa tanto datas futuras quanto passadas
+    }
+
+    function createEl(tag, props = {}) {
+        const el = document.createElement(tag);
+        for (const key in props) {
+            if (key === 'textContent') {
+                el.textContent = props[key];
+            } else {
+                el.setAttribute(key, props[key]);
+            }
+        }
+        return el;
+    }
+
+    function buildCard(r){
+      const card = createEl('article', { class: 'card' });
+      
+      const top = createEl('div', { class: 'top' });
+      top.appendChild(createEl('h3', { class: 'title', textContent: r.titulo || 'Sem título' }));
+
+      const chips = createEl('div', { class: 'chips' });
+      if(r.data) chips.appendChild(createEl('span', { class: 'chip', textContent: `📅 ${fmtDataFull(r.data)}` }));
+      if(r.horaInicio) chips.appendChild(createEl('span', { class: 'chip', textContent: `⏰ ${r.horaInicio}${r.horaFim ? ' – '+r.horaFim : ''}` }));
+      if(r.local) chips.appendChild(createEl('span', { class: 'chip', textContent: `📍 ${r.local}` }));
+
+      const desc = createEl('div', { class: 'desc', textContent: r.obs || '—' });
+
+      const btnrow = createEl('div', { class: 'btnrow' });
+      const btnPdf = createEl('button', { class: 'mini', textContent: 'PDF' });
+      btnPdf.onclick = () => exportarPDF([r], r.titulo || 'Compromisso');
+      const btnEdit = createEl('button', { class: 'mini', textContent: 'Editar' });
+      btnEdit.onclick = () => editar(r.id);
+      const btnDel = createEl('button', { class: 'mini danger', textContent: 'Excluir' });
+      btnDel.onclick = () => excluir(r.id);
+      btnrow.append(btnPdf, btnEdit, btnDel);
+
+      card.append(top, chips, desc, btnrow);
+      return card;
+    }
+
+    function render(){
+      const containers = {
+        hoje: $('#sec-hoje'),
+        amanha: $('#sec-amanha'),
+        proximos: $('#sec-proximos'),
+      };
+      
+      Object.values(containers).forEach(c => { c.hidden = true; c.querySelector('.list')?.replaceChildren(); });
+
+      if(!itens.length){ $('#vazio').hidden = false; return; }
+      $('#vazio').hidden = true;
+
+      const sortedItems = [...itens].sort(ordenar);
+      for(const item of sortedItems){
+        const category = categ(item.data);
+        const card = buildCard(item);
+        const container = containers[category];
+        if (container) {
+          container.hidden = false;
+          container.querySelector('.list').appendChild(card);
+        }
+      }
+    }
+
+    // ======== Exportação para PDF ========
+    function montarTabelaParaImpressao(data){
+      const tbody = $('#print-table tbody');
+      tbody.innerHTML = '';
+      data.forEach((r, i) => {
+        const tr = createEl('tr');
+        const criadoEm = r.criadoEm ? fmtDataHora(new Date(r.criadoEm)) : 'N/A';
+        const campos = [i+1, r.titulo, fmtDataFull(r.data), r.horaInicio, r.horaFim, r.local, r.obs, criadoEm];
+        campos.forEach(v => tr.appendChild(createEl('td', { textContent: String(v || '') })));
+        tbody.appendChild(tr);
+      });
+      $('#print-meta').textContent = `Gerado em ${fmtDataHora()} — Total de ${data.length} compromisso(s).`;
+    }
+
+    function exportarPDF(data, titulo){
+      const lista = data?.length ? data : itens;
+      if(!lista.length){ toast('Nada para exportar'); return; }
+      montarTabelaParaImpressao(lista);
+      $('#print-title').textContent = (lista.length === 1 && titulo) ? `Compromisso: ${titulo}` : 'Agenda de Compromissos';
+      window.print();
+    }
+
+    // ======== Event Listeners ========
+    function setupEventListeners() {
+      // Ações principais
+      $('#btn-add').addEventListener('click', ()=>{ limparForm(); openSheet(); });
+      $('#btn-exportar').addEventListener('click', ()=> exportarPDF());
+
+      // Controles do sheet
+      $('#btn-cancelar').addEventListener('click', closeSheet);
+      $('#btn-limpar').addEventListener('click', limparForm);
+      $('#btn-salvar').addEventListener('click', salvar);
+
+      // Tema e fonte
+      $('#btn-theme').addEventListener('click', toggleTheme);
+      $('#btn-font++').addEventListener('click', ()=> adjustFont(+2));
+      $('#btn-font--').addEventListener('click', ()=> adjustFont(-2));
+
+      // Salvar com "Enter" no formulário (exceto no textarea)
+      $('#form').addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' && e.target.tagName !== 'TEXTAREA'){
+          e.preventDefault();
+          salvar();
+        }
+      });
+
+      // Ações rápidas
+      $$('.q').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const action = btn.dataset.q;
+          if(action === 'hoje') $('#data').value = ymdLocal(new Date());
+          else if(action === 'amanha') $('#data').value = ymdLocal(addDays(new Date(), 1));
+          else if(action === '+1h'){
+            const hi = $('#horaInicio').value;
+            if(hi){
+              const [h,m] = hi.split(':').map(Number);
+              const d = new Date(); d.setHours(h, (m||0)+60, 0, 0);
+              $('#horaFim').value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            }
+          }
+          else if(/^[0-2]?[0-9]:[0-5][0-9]$/.test(action)) $('#horaInicio').value = action;
+        });
+      });
+
+      // Fechar sheet arrastando para baixo
+      let startY = null;
+      sheet.addEventListener('touchstart', (e)=>{ startY = e.touches[0].clientY; }, {passive:true});
+      sheet.addEventListener('touchmove', (e)=>{
+        if(startY === null) return;
+        if (e.touches[0].clientY - startY > 90) { // Limiar de 90px
+          closeSheet();
+          startY = null;
+        }
+      }, {passive:true});
+    }
+
+    // ======== Inicialização ========
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      carregar();
+    });
+  </script>
+</body>
+</html>
